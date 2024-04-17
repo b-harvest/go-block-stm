@@ -48,7 +48,7 @@ func ExecuteBlock(
 
 		return errors.New("scheduler did not complete")
 	}
-
+	fmt.Println(scheduler.Stats())
 	// Write the snapshot into the storage
 	mvMemory.WriteSnapshot(storage)
 	return nil

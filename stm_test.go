@@ -99,6 +99,11 @@ func TestSTM(t *testing.T) {
 			executors: 5,
 		},
 		{
+			name:      "noConflictBlock(100),5",
+			blk:       noConflictBlock(2),
+			executors: 5,
+		},
+		{
 			name:      "worstCaseBlock(100),5",
 			blk:       worstCaseBlock(100),
 			executors: 5,

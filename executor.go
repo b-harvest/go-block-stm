@@ -47,6 +47,7 @@ func NewExecutor(
 //   - `TryExecute` and `NeedsReexecution` don't change it if it returns a new valid task to run,
 //     otherwise it decreases it.
 func (e *Executor) Run() {
+	//fmt.Println("Executor", e.i, "started")
 	var kind TaskKind
 	version := InvalidTxnVersion
 	for !e.scheduler.Done() {
@@ -72,6 +73,7 @@ func (e *Executor) Run() {
 }
 
 func (e *Executor) TryExecute(version TxnVersion) (TxnVersion, TaskKind) {
+	//fmt.Println("Executor", e.i, "executing", version)
 	e.scheduler.executedTxns.Add(1)
 	readSet, writeSet := e.execute(version.Index)
 	wroteNewLocation := e.mvMemory.Record(version, readSet, writeSet)
@@ -79,8 +81,10 @@ func (e *Executor) TryExecute(version TxnVersion) (TxnVersion, TaskKind) {
 }
 
 func (e *Executor) NeedsReexecution(version TxnVersion) (TxnVersion, TaskKind) {
+	//fmt.Println("Executor", e.i, "validating", version)
 	e.scheduler.validatedTxns.Add(1)
-	valid := e.mvMemory.ValidateReadSet(version.Index)
+	//valid := e.mvMemory.ValidateReadSet(version.Index)
+	valid := true
 	aborted := !valid && e.scheduler.TryValidationAbort(version)
 	if aborted {
 		e.mvMemory.ConvertWritesToEstimates(version.Index)

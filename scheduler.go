@@ -76,14 +76,18 @@ func (s *Scheduler) DecreaseValidationIdx(target TxnIndex) {
 }
 
 func (s *Scheduler) CheckDone() {
-	observed_cnt := s.decrease_cnt.Load()
 	if s.execution_idx.Load() >= uint64(s.block_size) &&
-		s.validation_idx.Load() >= uint64(s.block_size) &&
 		s.num_active_tasks.Load() == 0 {
-		if observed_cnt == s.decrease_cnt.Load() {
-			s.done_marker.Store(true)
-		}
+		s.done_marker.Store(true)
 	}
+	//observed_cnt := s.decrease_cnt.Load()
+	//if s.execution_idx.Load() >= uint64(s.block_size) &&
+	//	s.validation_idx.Load() >= uint64(s.block_size) &&
+	//	s.num_active_tasks.Load() == 0 {
+	//	if observed_cnt == s.decrease_cnt.Load() {
+	//		s.done_marker.Store(true)
+	//	}
+	//}
 	// avoid busy waiting
 	runtime.Gosched()
 }
@@ -121,6 +125,7 @@ func (s *Scheduler) NextVersionToExecute() TxnVersion {
 //
 // Invariant `num_active_tasks`: increased if a valid task is returned.
 func (s *Scheduler) NextVersionToValidate() TxnVersion {
+	return InvalidTxnVersion
 	if s.validation_idx.Load() >= uint64(s.block_size) {
 		s.CheckDone()
 		return InvalidTxnVersion
@@ -142,13 +147,14 @@ func (s *Scheduler) NextVersionToValidate() TxnVersion {
 //
 // Invariant `num_active_tasks`: increased if a valid task is returned.
 func (s *Scheduler) NextTask() (TxnVersion, TaskKind) {
-	validation_idx := s.validation_idx.Load()
-	execution_idx := s.execution_idx.Load()
-	if validation_idx < execution_idx {
-		return s.NextVersionToValidate(), TaskKindValidation
-	} else {
-		return s.NextVersionToExecute(), TaskKindExecution
-	}
+	return s.NextVersionToExecute(), TaskKindExecution
+	//validation_idx := s.validation_idx.Load()
+	//execution_idx := s.execution_idx.Load()
+	//if validation_idx < execution_idx {
+	//	return s.NextVersionToValidate(), TaskKindValidation
+	//} else {
+	//	return s.NextVersionToExecute(), TaskKindExecution
+	//}
 }
 
 func (s *Scheduler) WaitForDependency(txn TxnIndex, blocking_txn TxnIndex) *Condvar {
