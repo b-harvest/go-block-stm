@@ -1,6 +1,7 @@
 package block_stm
 
 import (
+	"fmt"
 	"sync/atomic"
 
 	storetypes "cosmossdk.io/store/types"
@@ -35,6 +36,7 @@ func NewMVMemoryWithEstimates(
 ) *MVMemory {
 	data := make([]MVStore, len(stores))
 	for key, i := range stores {
+		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!", i, "->", key.Name())
 		data[i] = NewMVStore(key)
 	}
 

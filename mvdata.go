@@ -2,6 +2,7 @@ package block_stm
 
 import (
 	"bytes"
+	"fmt"
 
 	storetypes "cosmossdk.io/store/types"
 )
@@ -108,10 +109,17 @@ func (d *GMVData[V]) ValidateReadSet(txn TxnIndex, rs *ReadSet) bool {
 	for _, desc := range rs.Reads {
 		_, version, estimate := d.Read(desc.Key, txn)
 		if estimate {
+			fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!! %X\n", desc.Key)
 			// previously read entry from data, now ESTIMATE
 			return false
 		}
 		if version != desc.Version {
+			fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!! %X\n", desc.Key)
+			if bytes.HasPrefix(desc.Key, []byte{0x02}) {
+				fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!! %X\n", desc.Key[:1])
+				fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!! %X\n", desc.Key[1:20])
+				fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!! %s\n", string(desc.Key[20:]))
+			}
 			// previously read entry from data, now NOT_FOUND,
 			// or read some entry, but not the same version as before
 			return false
