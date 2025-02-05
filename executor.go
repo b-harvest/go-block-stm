@@ -2,6 +2,7 @@ package block_stm
 
 import (
 	"context"
+	"fmt"
 )
 
 // Executor fields are not mutated during execution.
@@ -72,6 +73,7 @@ func (e *Executor) NeedsReexecution(version TxnVersion) (TxnVersion, TaskKind) {
 	valid := e.mvMemory.ValidateReadSet(version.Index)
 	aborted := !valid && e.scheduler.TryValidationAbort(version)
 	if aborted {
+		fmt.Printf("block-stm:: aborted tx(%d)\n", version.Index)
 		e.mvMemory.ConvertWritesToEstimates(version.Index)
 	}
 	return e.scheduler.FinishValidation(version.Index, aborted)
@@ -80,5 +82,6 @@ func (e *Executor) NeedsReexecution(version TxnVersion) (TxnVersion, TaskKind) {
 func (e *Executor) execute(txn TxnIndex) *MultiMVMemoryView {
 	view := e.mvMemory.View(txn)
 	e.txExecutor(txn, view)
+	//fmt.Printf("block-stm:: executed tx(%d)\n", txn)
 	return view
 }

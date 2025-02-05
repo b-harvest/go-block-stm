@@ -8,6 +8,8 @@ import (
 	"sync"
 
 	storetypes "cosmossdk.io/store/types"
+	"github.com/cometbft/cometbft/types/time"
+	"github.com/rs/zerolog/log"
 )
 
 func ExecuteBlock(
@@ -40,10 +42,13 @@ func ExecuteBlockWithEstimates(
 		executors = maxParallelism()
 	}
 
+	log.Info().Int64("timestamp(unixnano)", time.Now().UTC().UnixNano()).Msg("Create a new scheduler and mvMemory.")
 	// Create a new scheduler
 	scheduler := NewScheduler(blockSize)
 	mvMemory := NewMVMemoryWithEstimates(blockSize, stores, storage, scheduler, estimates)
+	log.Info().Int64("timestamp(unixnano)", time.Now().UTC().UnixNano()).Msg("Successfully created a new scheduler and mvMemory.")
 
+	log.Info().Int64("timestamp(unixnano)", time.Now().UTC().UnixNano()).Int("num", executors).Msg("Create and run executors.")
 	var wg sync.WaitGroup
 	wg.Add(executors)
 	for i := 0; i < executors; i++ {
@@ -53,6 +58,7 @@ func ExecuteBlockWithEstimates(
 			e.Run()
 		}()
 	}
+	log.Info().Int64("timestamp(unixnano)", time.Now().UTC().UnixNano()).Int("num", executors).Msg("Successfully created and run executors.")
 	wg.Wait()
 
 	if !scheduler.Done() {
@@ -64,8 +70,10 @@ func ExecuteBlockWithEstimates(
 		return errors.New("scheduler did not complete")
 	}
 
+	log.Info().Int64("timestamp(unixnano)", time.Now().UTC().UnixNano()).Msg("Write the snapshot into the storage.")
 	// Write the snapshot into the storage
 	mvMemory.WriteSnapshot(storage)
+	log.Info().Int64("timestamp(unixnano)", time.Now().UTC().UnixNano()).Msg("Successfully wrote the snapshot into the storage.")
 	return nil
 }
 
